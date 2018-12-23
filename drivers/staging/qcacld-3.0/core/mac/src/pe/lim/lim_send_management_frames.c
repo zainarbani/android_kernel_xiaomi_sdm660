@@ -1058,17 +1058,12 @@ lim_send_addts_req_action_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
-
 	/* Queue Addts Response frame in high priority WQ */
 	qdf_status = wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 				TXRX_FRM_802_11_MGMT,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status))
 		pe_err("Could not send an Add TS Request (%X",
@@ -1411,16 +1406,12 @@ lim_send_assoc_rsp_mgmt_frame(tpAniSirGlobal mac_ctx,
 			(pe_session->pePersona == QDF_P2P_GO_MODE))
 		tx_flag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 pe_session->peSessionId, mac_hdr->fc.subType));
 	/* Queue Association Response frame in high priority WQ */
 	qdf_status = wma_tx_frame(mac_ctx, packet, (uint16_t) bytes,
 				TXRX_FRM_802_11_MGMT,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, frame, tx_flag,
 				sme_session, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 pe_session->peSessionId, qdf_status));
 
 	/* Pkt will be freed up by the callback */
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status))
@@ -1559,15 +1550,11 @@ lim_send_delts_req_action_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 				TXRX_FRM_802_11_MGMT,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	/* Pkt will be freed up by the callback */
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status))
 		pe_err("Failed to send Del TS (%X)!", qdf_status);
@@ -1996,10 +1983,6 @@ lim_send_assoc_req_mgmt_frame(tpAniSirGlobal mac_ctx,
 		pe_err("Failed to allocate %d bytes", bytes);
 
 		pe_session->limMlmState = pe_session->limPrevMlmState;
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_MLM_STATE,
-				 pe_session->peSessionId,
-				 pe_session->limMlmState));
-
 		/* Update PE session id */
 		assoc_cnf.sessionId = pe_session->peSessionId;
 
@@ -2081,8 +2064,6 @@ lim_send_assoc_req_mgmt_frame(tpAniSirGlobal mac_ctx,
 			      pe_session, eSIR_SUCCESS, eSIR_SUCCESS);
 #endif
 	mac_hdr = (tpSirMacMgmtHdr) frame;
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 pe_session->peSessionId, mac_hdr->fc.subType));
 
 	min_rid = lim_get_min_session_txrate(pe_session);
 	pe_debug("Sending Association Request length %d to ", bytes);
@@ -2092,8 +2073,6 @@ lim_send_assoc_req_mgmt_frame(tpAniSirGlobal mac_ctx,
 				lim_tx_complete, frame,
 				lim_assoc_tx_complete_cnf,
 				tx_flag, sme_sessionid, false, 0, min_rid);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-		pe_session->peSessionId, qdf_status));
 
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send Association Request (%X)!",
@@ -2454,8 +2433,6 @@ alloc_packet:
 		session->pePersona == QDF_STA_MODE)
 		tx_flag |= HAL_USE_PEER_STA_REQUESTED_MASK;
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 session->peSessionId, mac_hdr->fc.subType));
 
 	mac_ctx->auth_ack_status = LIM_AUTH_ACK_NOT_RCD;
 
@@ -2467,8 +2444,6 @@ alloc_packet:
 					 lim_auth_tx_complete_cnf,
 					 tx_flag, sme_sessionid, false, 0,
 					 min_rid);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-		session->peSessionId, qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("*** Could not send Auth frame, retCode=%X ***",
 			qdf_status);
@@ -2797,9 +2772,6 @@ lim_send_disassoc_mgmt_frame(tpAniSirGlobal pMac,
 	txFlag |= HAL_USE_PEER_STA_REQUESTED_MASK;
 
 	if (waitForAck) {
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-				 psessionEntry->peSessionId,
-				 pMacHdr->fc.subType));
 		/* Queue Disassociation frame in high priority WQ */
 		/* get the duration from the request */
 		qdf_status =
@@ -2809,9 +2781,6 @@ lim_send_disassoc_mgmt_frame(tpAniSirGlobal pMac,
 					 pFrame, lim_disassoc_tx_complete_cnf,
 					 txFlag, smeSessionId, false, 0,
 					 RATEID_DEFAULT);
-		MTRACE(qdf_trace
-			       (QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			       psessionEntry->peSessionId, qdf_status));
 
 		val = SYS_MS_TO_TICKS(LIM_DISASSOC_DEAUTH_ACK_TIMEOUT);
 
@@ -2829,9 +2798,6 @@ lim_send_disassoc_mgmt_frame(tpAniSirGlobal pMac,
 			return;
 		}
 	} else {
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-				 psessionEntry->peSessionId,
-				 pMacHdr->fc.subType));
 		/* Queue Disassociation frame in high priority WQ */
 		qdf_status = wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 					TXRX_FRM_802_11_MGMT,
@@ -2839,9 +2805,6 @@ lim_send_disassoc_mgmt_frame(tpAniSirGlobal pMac,
 					7,
 					lim_tx_complete, pFrame, txFlag,
 					smeSessionId, 0, RATEID_DEFAULT);
-		MTRACE(qdf_trace
-			       (QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			       psessionEntry->peSessionId, qdf_status));
 		if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 			pe_err("Failed to send Disassociation (%X)!",
 				qdf_status);
@@ -2974,9 +2937,6 @@ lim_send_deauth_mgmt_frame(tpAniSirGlobal pMac,
 #endif
 
 	if (waitForAck) {
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-				 psessionEntry->peSessionId,
-				 pMacHdr->fc.subType));
 		/* Queue Disassociation frame in high priority WQ */
 		qdf_status =
 			wma_tx_frameWithTxComplete(pMac, pPacket, (uint16_t) nBytes,
@@ -2985,9 +2945,6 @@ lim_send_deauth_mgmt_frame(tpAniSirGlobal pMac,
 					 pFrame, lim_deauth_tx_complete_cnf,
 					 txFlag, smeSessionId, false, 0,
 					 RATEID_DEFAULT);
-		MTRACE(qdf_trace
-			       (QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			       psessionEntry->peSessionId, qdf_status));
 		/* Pkt will be freed up by the callback lim_tx_complete */
 		if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 			pe_err("Failed to send De-Authentication (%X)!",
@@ -3015,10 +2972,7 @@ lim_send_deauth_mgmt_frame(tpAniSirGlobal pMac,
 							eLIM_DEAUTH_ACK_TIMER);
 			return;
 		}
-	} else {
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-				 psessionEntry->peSessionId,
-				 pMacHdr->fc.subType));
+ 	} else {
 #ifdef FEATURE_WLAN_TDLS
 		if ((NULL != pStaDs)
 		    && (STA_ENTRY_TDLS_PEER == pStaDs->staType)) {
@@ -3039,15 +2993,12 @@ lim_send_deauth_mgmt_frame(tpAniSirGlobal pMac,
 #ifdef FEATURE_WLAN_TDLS
 	}
 #endif
-		MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-				 psessionEntry->peSessionId, qdf_status));
 		if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 			pe_err("Failed to send De-Authentication (%X)!",
 				qdf_status);
 			/* Pkt will be freed up by the callback */
 		}
 	}
-
 } /* End lim_send_deauth_mgmt_frame. */
 
 #ifdef ANI_SUPPORT_11H
@@ -3159,17 +3110,10 @@ lim_send_meas_report_frame(tpAniSirGlobal pMac,
 			nStatus);
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 ((psessionEntry) ? psessionEntry->
-			  peSessionId : NO_SESSION), pMacHdr->fc.subType));
 	qdf_status =
 		wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 			   TXRX_FRM_802_11_MGMT, ANI_TXDIR_TODS, 7,
 			   lim_tx_complete, pFrame, 0, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace
-		       (QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-		       ((psessionEntry) ? psessionEntry->peSessionId : NO_SESSION),
-		       qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a Measurement Report (%X)!",
 			qdf_status);
@@ -3259,17 +3203,10 @@ lim_send_tpc_request_frame(tpAniSirGlobal pMac,
 			nStatus);
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 ((psessionEntry) ? psessionEntry->
-			  peSessionId : NO_SESSION), pMacHdr->fc.subType));
 	qdf_status =
 		wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 			   TXRX_FRM_802_11_MGMT, ANI_TXDIR_TODS, 7,
 			   lim_tx_complete, pFrame, 0, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace
-		       (QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-		       ((psessionEntry) ? psessionEntry->peSessionId : NO_SESSION),
-		       qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a TPC Request (%X)!",
 			qdf_status);
@@ -3362,17 +3299,10 @@ lim_send_tpc_report_frame(tpAniSirGlobal pMac,
 		pe_warn("There were warnings while packing a TPC Report (0x%08x)",
 			nStatus);
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 ((psessionEntry) ? psessionEntry->
-			  peSessionId : NO_SESSION), pMacHdr->fc.subType));
 	qdf_status =
 		wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 			   TXRX_FRM_802_11_MGMT, ANI_TXDIR_TODS, 7,
 			   lim_tx_complete, pFrame, 0, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace
-		(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-		((psessionEntry) ? psessionEntry->peSessionId : NO_SESSION),
-		qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a TPC Report (%X)!",
 			qdf_status);
@@ -3492,15 +3422,11 @@ lim_send_channel_switch_mgmt_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 				TXRX_FRM_802_11_MGMT,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a Channel Switch (%X)!",
 			qdf_status);
@@ -3641,8 +3567,6 @@ lim_send_extended_chan_switch_action_frame(tpAniSirGlobal mac_ctx,
 		frm.ext_chan_switch_ann_action.new_channel,
 			 frm.ext_chan_switch_ann_action.op_class);
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			session_entry->peSessionId, mac_hdr->fc.subType));
 	qdf_status = wma_tx_frame(mac_ctx, packet, (uint16_t) num_bytes,
 						 TXRX_FRM_802_11_MGMT,
 						 ANI_TXDIR_TODS,
@@ -3650,8 +3574,6 @@ lim_send_extended_chan_switch_action_frame(tpAniSirGlobal mac_ctx,
 						 lim_tx_complete, frame,
 						 txFlag, sme_session_id, 0,
 						 RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			session_entry->peSessionId, qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a Ext Channel Switch %X!",
 							 qdf_status);
@@ -3785,9 +3707,6 @@ lim_p2p_oper_chan_change_confirm_action_frame(tpAniSirGlobal mac_ctx,
 		MAC_ADDRESS_STR, session_entry->currentOperChannel,
 		MAC_ADDR_ARRAY(peer));
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			session_entry->peSessionId, mac_hdr->fc.subType));
-
 	qdf_status = wma_tx_frameWithTxComplete(mac_ctx, packet,
 			(uint16_t)num_bytes,
 			TXRX_FRM_802_11_MGMT, ANI_TXDIR_TODS,
@@ -3795,8 +3714,6 @@ lim_p2p_oper_chan_change_confirm_action_frame(tpAniSirGlobal mac_ctx,
 			lim_oper_chan_change_confirm_tx_complete_cnf,
 			tx_flag, sme_session_id, false, 0, RATEID_DEFAULT);
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			session_entry->peSessionId, qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send status %X!", qdf_status);
 		/* Pkt will be freed up by the callback */
@@ -3890,15 +3807,11 @@ lim_send_vht_opmode_notification_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac, pPacket, (uint16_t) nBytes,
 				TXRX_FRM_802_11_MGMT,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		pe_err("Failed to send a Channel Switch (%X)!",
 			qdf_status);
@@ -4023,8 +3936,6 @@ lim_send_neighbor_report_request_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac,
 				pPacket,
 				(uint16_t) nBytes,
@@ -4032,8 +3943,6 @@ lim_send_neighbor_report_request_frame(tpAniSirGlobal pMac,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (QDF_STATUS_SUCCESS != qdf_status) {
 		pe_err("wma_tx_frame FAILED! Status [%d]", qdf_status);
 		statusCode = eSIR_FAILURE;
@@ -4170,8 +4079,6 @@ lim_send_link_report_action_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac,
 				pPacket,
 				(uint16_t) nBytes,
@@ -4179,8 +4086,6 @@ lim_send_link_report_action_frame(tpAniSirGlobal pMac,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (QDF_STATUS_SUCCESS != qdf_status) {
 		pe_err("wma_tx_frame FAILED! Status [%d]", qdf_status);
 		statusCode = eSIR_FAILURE;
@@ -4347,8 +4252,6 @@ lim_send_radio_measure_report_action_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac,
 				pPacket,
 				(uint16_t) nBytes,
@@ -4356,8 +4259,6 @@ lim_send_radio_measure_report_action_frame(tpAniSirGlobal pMac,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (QDF_STATUS_SUCCESS != qdf_status) {
 		pe_err("wma_tx_frame FAILED! Status [%d]", qdf_status);
 		statusCode = eSIR_FAILURE;
@@ -4615,8 +4516,6 @@ tSirRetStatus lim_send_sa_query_response_frame(tpAniSirGlobal pMac,
 		txFlag |= HAL_USE_BD_RATE2_FOR_MANAGEMENT_FRAME;
 	}
 
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_MGMT,
-			 psessionEntry->peSessionId, pMacHdr->fc.subType));
 	qdf_status = wma_tx_frame(pMac,
 				pPacket,
 				(uint16_t) nBytes,
@@ -4624,8 +4523,6 @@ tSirRetStatus lim_send_sa_query_response_frame(tpAniSirGlobal pMac,
 				ANI_TXDIR_TODS,
 				7, lim_tx_complete, pFrame, txFlag,
 				smeSessionId, 0, RATEID_DEFAULT);
-	MTRACE(qdf_trace(QDF_MODULE_ID_PE, TRACE_CODE_TX_COMPLETE,
-			 psessionEntry->peSessionId, qdf_status));
 	if (QDF_STATUS_SUCCESS != qdf_status) {
 		pe_err("wma_tx_frame FAILED! Status [%d]", qdf_status);
 		nSirStatus = eSIR_FAILURE;
